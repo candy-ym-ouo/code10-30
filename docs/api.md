@@ -127,7 +127,7 @@ Refresh Cookie 路径为 `/api/v1/auth`，生产环境在 HTTPS 下自动使用 
 | POST | `/exports` | 创建 JSON/CSV 用户数据导出 |
 | GET | `/exports/:id` | 查询导出状态和短时下载地址 |
 
-统计接口必须传 `from`、`to` 和 IANA `timezone`。
+统计接口必须传 `from`、`to` 和 IANA `timezone`。`/statistics/trends` 的日桶返回该时区下的稳定 `YYYY-MM-DD` 日期，不再转换为 UTC 日期。
 
 ## 健康检查
 

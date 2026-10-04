@@ -63,10 +63,10 @@ export async function getTrends(userId: string, range: StatisticsRange) {
   validateRange(range);
   const instrument = range.instrument ? Prisma.sql`AND s."instrument" = ${range.instrument}` : Prisma.empty;
   const rows = await prisma.$queryRaw<
-    Array<{ bucket: Date; practiceCount: bigint; durationMs: bigint; annotationCount: bigint }>
+    Array<{ bucket: string; practiceCount: bigint; durationMs: bigint; annotationCount: bigint }>
   >(Prisma.sql`
     SELECT
-      date_trunc('day', s."completed_at" AT TIME ZONE ${range.timezone}) AS bucket,
+      to_char(s."completed_at" AT TIME ZONE ${range.timezone}, 'YYYY-MM-DD') AS bucket,
       count(*)::bigint AS "practiceCount",
       COALESCE(sum(s."actual_duration_ms"), 0)::bigint AS "durationMs",
       COALESCE(sum(a.annotation_count), 0)::bigint AS "annotationCount"
@@ -86,7 +86,7 @@ export async function getTrends(userId: string, range: StatisticsRange) {
   `);
   return {
     data: rows.map((row) => ({
-      date: row.bucket.toISOString().slice(0, 10),
+      date: row.bucket,
       practiceCount: Number(row.practiceCount),
       durationMs: Number(row.durationMs),
       annotationCount: Number(row.annotationCount),
