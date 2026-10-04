@@ -9,7 +9,7 @@ use([BarChart, LineChart, PieChart, GridComponent, LegendComponent, TooltipCompo
 import { apiFetch, ApiError } from "../api/client.js";
 import LoadingBlock from "../components/LoadingBlock.vue";
 import MetricCard from "../components/MetricCard.vue";
-import { annotationLabels, formatDuration } from "../utils/format.js";
+import { annotationLabels, formatDuration, toLocalDateString } from "../utils/format.js";
 
 interface Overview { practiceCount: number; totalDurationMs: number; annotationCount: number; averageAnnotationsPerPractice: number; newGoalCount: number; completedGoalCount: number; overdueGoalCount: number; goalCompletionRate: number }
 interface Trends { data: Array<{ date: string; practiceCount: number; durationMs: number; annotationCount: number }> }
@@ -18,8 +18,8 @@ interface GoalStats { newGoals: number; completedGoals: number; dueGoals: number
 interface Instruments { data: Array<{ instrument: string; practiceCount: number; durationMs: number; annotationCount: number }> }
 
 const range = ref("30");
-const customFrom = ref(new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10));
-const customTo = ref(new Date().toISOString().slice(0, 10));
+const customFrom = ref(toLocalDateString(new Date(Date.now() - 30 * 86_400_000)));
+const customTo = ref(toLocalDateString());
 const overview = ref<Overview | null>(null);
 const trends = ref<Trends | null>(null);
 const issues = ref<Issues | null>(null);

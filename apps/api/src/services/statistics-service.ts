@@ -62,11 +62,13 @@ export async function getOverview(userId: string, range: StatisticsRange) {
 export async function getTrends(userId: string, range: StatisticsRange) {
   validateRange(range);
   const instrument = range.instrument ? Prisma.sql`AND s."instrument" = ${range.instrument}` : Prisma.empty;
+  // 桶日期必须在数据库内格式化为文本：date_trunc 返回的 timestamp without time zone
+  // 一旦经驱动反序列化成 JS Date 再按 UTC 格式化，落日期会随服务器时区漂移（东八区会变回前一天）。
   const rows = await prisma.$queryRaw<
-    Array<{ bucket: Date; practiceCount: bigint; durationMs: bigint; annotationCount: bigint }>
+    Array<{ bucket: string; practiceCount: bigint; durationMs: bigint; annotationCount: bigint }>
   >(Prisma.sql`
     SELECT
-      date_trunc('day', s."completed_at" AT TIME ZONE ${range.timezone}) AS bucket,
+      to_char(s."completed_at" AT TIME ZONE ${range.timezone}, 'YYYY-MM-DD') AS bucket,
       count(*)::bigint AS "practiceCount",
       COALESCE(sum(s."actual_duration_ms"), 0)::bigint AS "durationMs",
       COALESCE(sum(a.annotation_count), 0)::bigint AS "annotationCount"
@@ -86,7 +88,7 @@ export async function getTrends(userId: string, range: StatisticsRange) {
   `);
   return {
     data: rows.map((row) => ({
-      date: row.bucket.toISOString().slice(0, 10),
+      date: row.bucket,
       practiceCount: Number(row.practiceCount),
       durationMs: Number(row.durationMs),
       annotationCount: Number(row.annotationCount),

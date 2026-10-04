@@ -18,6 +18,11 @@ export function toDateTimeLocal(value = new Date()): string {
   return new Date(value.getTime() - offset).toISOString().slice(0, 16);
 }
 
+export function toLocalDateString(value = new Date()): string {
+  const offset = value.getTimezoneOffset() * 60_000;
+  return new Date(value.getTime() - offset).toISOString().slice(0, 10);
+}
+
 export function formatTimeMs(value: number): string {
   const safe = Math.max(0, value);
   const minutes = Math.floor(safe / 60_000);
